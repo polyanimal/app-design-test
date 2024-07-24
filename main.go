@@ -32,9 +32,8 @@ func main() {
 
 	mux.HandleFunc("/orders", orderHandler.CreateOrder)
 
-	l.LogInfo("main started")
-
 	l.LogInfo("Server listening on localhost:8080")
+
 	err := http.ListenAndServe(":8080", mux)
 	if errors.Is(err, http.ErrServerClosed) {
 		l.LogInfo("Server closed")

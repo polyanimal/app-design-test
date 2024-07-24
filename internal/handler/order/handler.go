@@ -3,7 +3,6 @@ package order
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"applicationDesignTest/internal/models"
@@ -23,8 +22,6 @@ func NewHandler(service OrderService, l logger.Logger) *Handler {
 }
 
 func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Handler started")
-
 	var newOrder models.Order
 	json.NewDecoder(r.Body).Decode(&newOrder)
 
