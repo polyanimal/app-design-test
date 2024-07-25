@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"applicationDesignTest/internal/models"
@@ -19,12 +20,18 @@ func NewRepo(storage *OrderStorage) *OrderRepository {
 }
 
 func (r *OrderRepository) AddOrder(ctx context.Context, order models.Order) error {
+	r.storage.Lock()
+	defer r.storage.Unlock()
+
 	r.storage.Orders = append(r.storage.Orders, order)
 
 	return nil
 }
 
 func (r *OrderRepository) GetAvailableByDateAndRoomID(ctx context.Context, daysToBook []time.Time, roomID string) ([]models.RoomAvailability, error) {
+	r.storage.Lock()
+	defer r.storage.Unlock()
+
 	availability := make([]models.RoomAvailability, 0)
 
 	for _, dayToBook := range daysToBook {
@@ -39,6 +46,9 @@ func (r *OrderRepository) GetAvailableByDateAndRoomID(ctx context.Context, daysT
 }
 
 func (r *OrderRepository) UpdateAvailability(ctx context.Context, availabilityToUpdate []models.RoomAvailability) error {
+	r.storage.Lock()
+	defer r.storage.Unlock()
+
 	for _, atu := range availabilityToUpdate {
 		for i, a := range r.storage.Availability {
 			if a.RoomID == atu.RoomID && a.Date.Equal(atu.Date) {
@@ -51,6 +61,7 @@ func (r *OrderRepository) UpdateAvailability(ctx context.Context, availabilityTo
 }
 
 type OrderStorage struct {
+	sync.Mutex
 	Orders       []models.Order
 	Availability []models.RoomAvailability
 }

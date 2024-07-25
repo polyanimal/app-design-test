@@ -23,7 +23,11 @@ func NewHandler(service OrderService, l logger.Logger) *Handler {
 
 func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	var newOrder models.Order
-	json.NewDecoder(r.Body).Decode(&newOrder)
+	if err := json.NewDecoder(r.Body).Decode(&newOrder); err != nil {
+		http.Error(w, "Failed to parse request", http.StatusBadRequest)
+		h.logger.LogErrorf(err.Error())
+		return
+	}
 
 	ctx := context.Background()
 
