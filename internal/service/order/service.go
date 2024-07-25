@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"applicationDesignTest/internal/models"
@@ -10,6 +11,7 @@ import (
 )
 
 type Service struct {
+	sync.Mutex
 	repo OrderRepository
 }
 
@@ -27,6 +29,7 @@ func (s *Service) CreateOrder(ctx context.Context, newOrder models.Order) error 
 		unavailableDays[day] = struct{}{}
 	}
 
+	s.Lock()
 	availability, err := s.repo.GetAvailableByDateAndRoomID(ctx, daysToBook, newOrder.RoomID)
 	if err != nil {
 		return err
@@ -51,6 +54,8 @@ func (s *Service) CreateOrder(ctx context.Context, newOrder models.Order) error 
 	if err := s.repo.UpdateAvailability(ctx, availabilityToUpdate); err != nil {
 		return err
 	}
+
+	s.Unlock()
 
 	return s.repo.AddOrder(ctx, newOrder)
 }
